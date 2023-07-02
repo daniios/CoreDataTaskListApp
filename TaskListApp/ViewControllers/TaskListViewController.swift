@@ -3,19 +3,16 @@
 //  TaskListApp
 //
 //  Created by Vasichko Anna on 29.06.2023.
+//  Modified by Chupin Daniil on 02.07.2023.
 //
 
 import UIKit
-import CoreData
-
 
 final class TaskListViewController: UITableViewController {
     
     private let cellID = "task"
     private var taskList: [Task] = []
     
-    private let viewContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -28,49 +25,41 @@ final class TaskListViewController: UITableViewController {
     }
     
  
-
+    // MARK: - Private methods
     @objc private func addNewTask() {
-        showAlert(withTitle: "New Task", andMessage: "What would you like to do?")
+        showAlert(withTitle: "New Task", message: "What would you like to do?", saveActionHandler: { [unowned self] taskName in
+            save(taskName)
+        })
     }
     
     private func fetchData() {
-        let fetchRequest = Task.fetchRequest()
-        
-        do {
-           taskList = try viewContext.fetch(fetchRequest)
-        } catch {
-            
-        }
+        taskList = CoreDataHelper.shared.fetchData()
+        tableView.reloadData()
     }
     
     private func save(_ taskName: String) {
-        let task = Task(context: viewContext)
-        task.title = taskName
-        
-        taskList.append(task)
-        
-        tableView.insertRows(
-            at: [IndexPath(row: taskList.count - 1, section: 0)],
-            with: .automatic
-        )
-        
-        if viewContext.hasChanges {
-            do {
-                try viewContext.save()
-            } catch {
-                print(error)
-            }
-        }
-    
+        CoreDataHelper.shared.save(taskName)
+        fetchData()
         dismiss(animated: true)
     }
     
-    private func showAlert(withTitle title: String, andMessage message: String) {
+    private func update(_ task: Task, withName newName: String) {
+        task.title = newName
+        CoreDataHelper.shared.update(task)
+        fetchData()
+    }
+    
+    private func delete(_ task: Task) {
+        CoreDataHelper.shared.delete(task)
+        fetchData()
+    }
+    
+    private func showAlert(withTitle title: String, message: String, saveActionHandler: @escaping (String) -> Void) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        let saveAction = UIAlertAction(title: "Save Task", style: .default) { [unowned self] _ in
+        let saveAction = UIAlertAction(title: "Save Task", style: .default) { _ in
             guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
-            save(taskName)
+            saveActionHandler(taskName)
         }
         
         let cancelAction = UIAlertAction(title: "Cancel", style: .destructive)
@@ -102,7 +91,26 @@ extension TaskListViewController {
         cell.contentConfiguration = content
         return cell
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let task = taskList[indexPath.row]
+        showEditAlert(for: task, at: indexPath)
+    }
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let task = taskList[indexPath.row]
+            delete(task)
+        }
+    }
+    
+    private func showEditAlert(for task: Task, at indexPath: IndexPath) {
+        showAlert(withTitle: "Edit Task", message: "Edit task name:", saveActionHandler: { [unowned self] newTaskName in
+            update(task, withName: newTaskName)
+        })
+    }
 }
+
 
 // MARK: - Setup UI
 private extension TaskListViewController {
