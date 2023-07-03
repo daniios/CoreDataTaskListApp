@@ -58,6 +58,7 @@
 		519467EA2A4DF1AF00060568 /* TaskListApp */ = {
 			isa = PBXGroup;
 			children = (
+				A5FFADBB2A52D3AF00088D72 /* Models */,
 				A5FFADBA2A51C18B00088D72 /* Resources */,
 				A5FFADB92A51C17100088D72 /* Storyboards */,
 				A5FFADB82A51C15600088D72 /* ViewControllers */,
@@ -71,7 +72,6 @@
 			isa = PBXGroup;
 			children = (
 				A5FFADB52A51B4BB00088D72 /* StorageManager.swift */,
-				519467F42A4DF1AF00060568 /* TaskListApp.xcdatamodeld */,
 			);
 			path = StorageManager;
 			sourceTree = "<group>";
@@ -108,6 +108,14 @@
 				519467F72A4DF1B100060568 /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		A5FFADBB2A52D3AF00088D72 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				519467F42A4DF1AF00060568 /* TaskListApp.xcdatamodeld */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

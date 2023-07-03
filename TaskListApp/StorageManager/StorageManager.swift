@@ -13,9 +13,7 @@ final class CoreDataHelper {
     
     private let persistentContainer: NSPersistentContainer
     
-    private lazy var viewContext: NSManagedObjectContext = {
-        return persistentContainer.viewContext
-    }()
+    private lazy var viewContext = persistentContainer.viewContext
     
     private init() {
         persistentContainer = NSPersistentContainer(name: "TaskListApp")
@@ -48,14 +46,21 @@ final class CoreDataHelper {
         }
     }
     
-    func save(_ taskName: String) {
+    func save(_ taskName: String) -> Task? {
         let task = Task(context: viewContext)
         task.title = taskName
-        
-        saveContext()
+
+        do {
+            try viewContext.save()
+            return task
+        } catch {
+            print(error)
+            return nil
+        }
     }
     
-    func update(_ task: Task) {
+    func update(_ task: Task, withName newName: String) {
+        task.title = newName
         saveContext()
     }
     

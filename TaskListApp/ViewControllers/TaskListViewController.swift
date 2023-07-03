@@ -38,15 +38,19 @@ final class TaskListViewController: UITableViewController {
     }
     
     private func save(_ taskName: String) {
-        CoreDataHelper.shared.save(taskName)
-        fetchData()
+        guard let newTask = CoreDataHelper.shared.save(taskName) else { return }
+        
+        taskList.append(newTask)
+        let indexPath = IndexPath(row: taskList.count - 1, section: 0)
+        tableView.insertRows(at: [indexPath], with: .automatic)
+        
         dismiss(animated: true)
     }
     
     private func update(_ task: Task, withName newName: String) {
-        task.title = newName
-        CoreDataHelper.shared.update(task)
-        fetchData()
+        CoreDataHelper.shared.update(task, withName: newName)
+        let indexPath = IndexPath(row: taskList.firstIndex(of: task)!, section: 0)
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     private func delete(_ task: Task) {
@@ -54,8 +58,13 @@ final class TaskListViewController: UITableViewController {
         fetchData()
     }
     
-    private func showAlert(withTitle title: String, message: String, saveActionHandler: @escaping (String) -> Void) {
+    private func showAlert(withTitle title: String, message: String, taskName: String? = nil, saveActionHandler: @escaping (String) -> Void) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        
+        alert.addTextField { textField in
+            textField.placeholder = "New Task"
+            textField.text = taskName
+        }
         
         let saveAction = UIAlertAction(title: "Save Task", style: .default) { _ in
             guard let taskName = alert.textFields?.first?.text, !taskName.isEmpty else { return }
@@ -66,10 +75,6 @@ final class TaskListViewController: UITableViewController {
         
         alert.addAction(saveAction)
         alert.addAction(cancelAction)
-        
-        alert.addTextField { textField in
-            textField.placeholder = "New Task"
-        }
         
         present(alert, animated: true)
     }
@@ -105,7 +110,7 @@ extension TaskListViewController {
     }
     
     private func showEditAlert(for task: Task, at indexPath: IndexPath) {
-        showAlert(withTitle: "Edit Task", message: "Edit task name:", saveActionHandler: { [unowned self] newTaskName in
+        showAlert(withTitle: "Edit Task", message: "Edit task name:", taskName: task.title, saveActionHandler: { [unowned self] newTaskName in
             update(task, withName: newTaskName)
         })
     }
