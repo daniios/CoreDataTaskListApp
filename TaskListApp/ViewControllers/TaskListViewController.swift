@@ -43,8 +43,6 @@ final class TaskListViewController: UITableViewController {
         taskList.append(newTask)
         let indexPath = IndexPath(row: taskList.count - 1, section: 0)
         tableView.insertRows(at: [indexPath], with: .automatic)
-        
-        dismiss(animated: true)
     }
     
     private func update(_ task: Task, withName newName: String) {
@@ -98,13 +96,15 @@ extension TaskListViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         let task = taskList[indexPath.row]
         showEditAlert(for: task, at: indexPath)
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let task = taskList[indexPath.row]
+            let task = taskList.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
             delete(task)
         }
     }

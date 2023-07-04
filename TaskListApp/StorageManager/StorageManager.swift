@@ -24,13 +24,15 @@ final class CoreDataHelper {
         })
     }
     
+    // MARK: - Core Data Saving support
     func saveContext() {
         let context = viewContext
         if context.hasChanges {
             do {
                 try context.save()
             } catch {
-                print(error)
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
             }
         }
     }
